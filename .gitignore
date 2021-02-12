@@ -131,3 +131,9 @@ dmypy.json
 
 # custom
 .vscode
+Corpora/Proc_*
+auxfiles/pickle
+auxfiles/txt/Quixote/*.txt
+auxfiles/txt/Ibsen/*.txt
+auxfiles/json/Quixote*
+auxfiles/json/Ibsen*
