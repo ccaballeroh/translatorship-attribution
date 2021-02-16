@@ -42,14 +42,6 @@ FIGS_FOLDER = RESULTS_FOLDER / "figs"
 if not FIGS_FOLDER.exists():
     FIGS_FOLDER.mkdir()
 
-MOST_RELEVANT_FOLDER = FIGS_FOLDER / "most"
-if not MOST_RELEVANT_FOLDER.exists():
-    MOST_RELEVANT_FOLDER.mkdir()
-
-PCA_FOLDER = FIGS_FOLDER / "pca"
-if not PCA_FOLDER.exists():
-    PCA_FOLDER.mkdir()
-
 
 def convert_data(file: Path) -> Dict[str, Any]:
     X_dict, y_str = get_dataset_from_json(file)
@@ -120,9 +112,7 @@ def plot_most_relevant(
     plot.set(title=file.stem.replace("_", " "))
     fig = plot.get_figure()
     fig.savefig(
-        MOST_RELEVANT_FOLDER / f"{file.stem}_{translator}_{model}.svg",
-        bbox_inches="tight",
-        dpi=300,
+        FIGS_FOLDER / f"{file.stem}_{translator}.svg", bbox_inches="tight", dpi=300,
     )
     fig.clf()
 
@@ -145,45 +135,45 @@ def save_tables(*, df: pd.DataFrame, translator: str, file: Path) -> None:
         f.write(latex)
 
 
-def plot_pca(*, file: Path) -> None:
-    pca = PCA(n_components=2)
-    sns.set_style("whitegrid")
-    title = file.stem.replace("_", " ")
+# def plot_pca(*, file: Path) -> None:
+#     pca = PCA(n_components=2)
+#     sns.set_style("whitegrid")
+#     title = file.stem.replace("_", " ")
 
-    X_dict, y_str = get_dataset_from_json(file)
+#     X_dict, y_str = get_dataset_from_json(file)
 
-    dict_vectorizer = DictVectorizer(sparse=False)
-    encoder = LabelEncoder()
+#     dict_vectorizer = DictVectorizer(sparse=False)
+#     encoder = LabelEncoder()
 
-    X, y = dict_vectorizer.fit_transform(X_dict), encoder.fit_transform(y_str)
+#     X, y = dict_vectorizer.fit_transform(X_dict), encoder.fit_transform(y_str)
 
-    features = StandardScaler().fit_transform(X)
-    X_pca = pca.fit_transform(features)
+#     features = StandardScaler().fit_transform(X)
+#     X_pca = pca.fit_transform(features)
 
-    d = {
-        "Principal Component 1": pd.Series(X_pca[:, 0]),
-        "Principal Component 2": pd.Series(X_pca[:, 1]),
-        "Translator": pd.Series(encoder.inverse_transform(y)),
-    }
-    data = pd.DataFrame(d)
+#     d = {
+#         "Principal Component 1": pd.Series(X_pca[:, 0]),
+#         "Principal Component 2": pd.Series(X_pca[:, 1]),
+#         "Translator": pd.Series(encoder.inverse_transform(y)),
+#     }
+#     data = pd.DataFrame(d)
 
-    plot = sns.scatterplot(
-        x="Principal Component 1",
-        y="Principal Component 2",
-        hue="Translator",
-        data=data,
-        palette="cividis",
-        alpha=0.75,
-    )
+#     plot = sns.scatterplot(
+#         x="Principal Component 1",
+#         y="Principal Component 2",
+#         hue="Translator",
+#         data=data,
+#         palette="cividis",
+#         alpha=0.75,
+#     )
 
-    plot.set(title=f"{title}")
-    fig = plot.get_figure()
-    fig.savefig(
-        PCA_FOLDER / f"pca_{'_'.join(title.split())}.svg", bbox_inches="tight", dpi=300,
-    )
-    fig.clf()
+#     plot.set(title=f"{title}")
+#     fig = plot.get_figure()
+#     fig.savefig(
+#         PCA_FOLDER / f"pca_{'_'.join(title.split())}.svg", bbox_inches="tight", dpi=300,
+#     )
+#     fig.clf()
 
-    return None
+#     return None
 
 
 def return_n_most_important(
