@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from pandas import DataFrame
+from sklearn.decomposition import PCA
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.linear_model import LogisticRegression
@@ -20,14 +22,12 @@ from sklearn.utils.multiclass import unique_labels
 
 from helper import ROOT
 from helper.analysis import JSON_FOLDER, get_dataset_from_json
-from helper.utils import return_n_most_important
 
 __all__ = [
     "convert_data",
     "train_extract_most_relevant",
     "plot_most_relevant",
     "save_tables",
-    "plot_confusion_matrix",
 ]
 
 RESULTS_FOLDER = Path(fr"{ROOT}/results/")
@@ -42,13 +42,13 @@ FIGS_FOLDER = RESULTS_FOLDER / "figs"
 if not FIGS_FOLDER.exists():
     FIGS_FOLDER.mkdir()
 
-CONF_MAT_FOLDER = FIGS_FOLDER / "cm"
-if not CONF_MAT_FOLDER.exists():
-    CONF_MAT_FOLDER.mkdir()
-
 MOST_RELEVANT_FOLDER = FIGS_FOLDER / "most"
 if not MOST_RELEVANT_FOLDER.exists():
     MOST_RELEVANT_FOLDER.mkdir()
+
+PCA_FOLDER = FIGS_FOLDER / "pca"
+if not PCA_FOLDER.exists():
+    PCA_FOLDER.mkdir()
 
 
 def convert_data(file: Path) -> Dict[str, Any]:
@@ -66,56 +66,37 @@ def convert_data(file: Path) -> Dict[str, Any]:
 
 def train_extract_most_relevant(
     *,
-    model_name: str,
     X: np.ndarray,
     y: np.ndarray,
     encoder: LabelEncoder,
     dict_vectorizer: DictVectorizer,
-    feature_selection: bool,
-    k: int = 45,
-    n: int = 15,
+    k: int = 25,
+    n: int = 10,
 ) -> Dict[str, Any]:
 
-    if feature_selection and X.shape[1] >= k:
-        chi2_selector = SelectKBest(chi2, k=k)
-        X = chi2_selector.fit_transform(X, y)
-        all_names = np.array(dict_vectorizer.get_feature_names())
-        feature_names = list(all_names[chi2_selector.get_support()])
-    else:
-        feature_names = dict_vectorizer.get_feature_names()
+    chi2_selector = SelectKBest(chi2, k=k)
+    X = chi2_selector.fit_transform(X, y)
+    all_names = np.array(dict_vectorizer.get_feature_names())
+    feature_names = list(all_names[chi2_selector.get_support()])
 
     scaler = StandardScaler(with_mean=False)
     X_, y_ = shuffle(X, y, random_state=24)
 
-    if model_name == "LogisticRegression":
-        X = scaler.fit_transform(X)
-        model = LogisticRegression()
-    elif model_name == "SVM":
-        X = scaler.fit_transform(X)
-        model = LinearSVC()
-    elif model_name == "NaiveBayes":
-        model = MultinomialNB()
-    else:
-        raise NotImplementedError
+    X = scaler.fit_transform(X)
+    model = LogisticRegression()
 
     clf = model.fit(X_, y_)
 
     args = {"clf": clf, "feature_names": feature_names, "encoder": encoder, "n": n}
 
-    most_relevant = return_n_most_important(**args)
-
-    return {
-        "clf": clf,
-        "scaler": scaler,
-        "most_relevant": most_relevant,
-    }
+    return return_n_most_important(**args)
 
 
 sns.set_style("whitegrid")
 
 
 def plot_most_relevant(
-    *, data: Dict[str, pd.DataFrame], translator: str, model: str, file: Path
+    *, data: Dict[str, pd.DataFrame], translator: str, file: Path
 ) -> None:
     """Saves a bar plot of the most relevant features for a translator using a classifier.
 
@@ -126,29 +107,27 @@ def plot_most_relevant(
     data: Dict[str, pd.DataFrame]  - The key is the translator name and the DataFrame
                                  contains two Series: 'Weight' and 'Feature'
     translator: str             - Name of the translator
-    model: str                  - Name of the model (classifier) used
     file: Path                  - Feature set used to train the model
 
     Returns:
     None
     """
+    model = "Logistic Regression"
     plot = sns.barplot(
         x=data[translator]["Weight"], y=data[translator]["Feature"], palette="cividis",
     )
     features = " ".join(file.stem.split("_")[2:])
-    plot.set(title=f"{translator} - {model} - {features}")
+    plot.set(title=file.stem.replace("_", " "))
     fig = plot.get_figure()
     fig.savefig(
-        MOST_RELEVANT_FOLDER / f"{file.stem}_{translator}_{model}.png",
+        MOST_RELEVANT_FOLDER / f"{file.stem}_{translator}_{model}.svg",
         bbox_inches="tight",
         dpi=300,
     )
     fig.clf()
 
 
-def save_tables(
-    *, df: pd.DataFrame, translator: str, file: Path, model_name: str
-) -> None:
+def save_tables(*, df: pd.DataFrame, translator: str, file: Path) -> None:
     """Saves to disk the tabular data of the n most relevant features of a classifier.
 
     Takes a DataFrame containing the n most relevant features and their weights.
@@ -157,45 +136,113 @@ def save_tables(
     df: pd.DataFrame        - Contains two series: 'Weights' and 'Features'
     translator: str         - Name of the translator
     file: Path              - Feature set used to train the classifier
-    model_name: str         - Name of the classifier used
 
     Returns:
     None
     """
-    df.to_csv(
-        TABLES_FOLDER / f"{file.stem}_{translator}_{model_name}.csv",
-        float_format="%.4f",
-    )
-
     latex = df.to_latex(float_format=lambda x: "%.4f" % x)
-    with open(TABLES_FOLDER / f"{file.stem}_{translator}_{model_name}.tex", "w") as f:
+    with open(TABLES_FOLDER / f"{file.stem}_{translator}.tex", "w") as f:
         f.write(latex)
 
-    html = df.to_html(float_format="%.4f")
-    with open(TABLES_FOLDER / f"{file.stem}_{translator}_{model_name}.html", "w") as f:
-        f.write(html)
 
+def plot_pca(*, file: Path) -> None:
+    pca = PCA(n_components=2)
+    sns.set_style("whitegrid")
+    title = file.stem.replace("_", " ")
 
-def plot_confusion_matrix(
-    X: np.ndarray, y: np.ndarray, encoder: LabelEncoder, file: Path
-) -> None:
-    sns.set(font_scale=1.4)
-    scaler = StandardScaler(with_mean=False)
-    X = scaler.fit_transform(X)
-    X_, y_ = shuffle(X, y, random_state=24)
-    log_model = LogisticRegression()
+    X_dict, y_str = get_dataset_from_json(file)
 
-    y_pred = cross_val_predict(log_model, X_, y_, cv=10)
-    cm = confusion_matrix(y_, y_pred, labels=unique_labels(y_))
-    df = pd.DataFrame(cm, index=encoder.classes_, columns=encoder.classes_)
-    cm_plot = sns.heatmap(
-        df, annot=True, cbar=None, cmap="Blues", fmt="d", annot_kws={"size": 18}
+    dict_vectorizer = DictVectorizer(sparse=False)
+    encoder = LabelEncoder()
+
+    X, y = dict_vectorizer.fit_transform(X_dict), encoder.fit_transform(y_str)
+
+    features = StandardScaler().fit_transform(X)
+    X_pca = pca.fit_transform(features)
+
+    d = {
+        "Principal Component 1": pd.Series(X_pca[:, 0]),
+        "Principal Component 2": pd.Series(X_pca[:, 1]),
+        "Translator": pd.Series(encoder.inverse_transform(y)),
+    }
+    data = pd.DataFrame(d)
+
+    plot = sns.scatterplot(
+        x="Principal Component 1",
+        y="Principal Component 2",
+        hue="Translator",
+        data=data,
+        palette="cividis",
+        alpha=0.75,
     )
-    plt.title(f"{' '.join(file.stem.split('_')[2:])}")
-    plt.tight_layout()
-    plt.ylabel("True translator")
-    plt.xlabel("Predicted translator")
-    plt.savefig(
-        CONF_MAT_FOLDER / f"cm_{file.stem}.png", bbox_inches="tight", dpi=300,
+
+    plot.set(title=f"{title}")
+    fig = plot.get_figure()
+    fig.savefig(
+        PCA_FOLDER / f"pca_{'_'.join(title.split())}.svg", bbox_inches="tight", dpi=300,
     )
-    plt.clf()
+    fig.clf()
+
+    return None
+
+
+def return_n_most_important(
+    *,
+    clf: LogisticRegression,
+    feature_names: List[str],
+    encoder: LabelEncoder,
+    n: int = 10,
+) -> Dict[str, DataFrame]:
+    """Returns n features with largest weights in a logistic regression classifier.
+
+    As inputs a trained logistic regressor along with the DictVectorizer and
+    LabelEncoder used to encode dictionary of feature names and values and
+    classes names, and the number of features to return.
+
+    Parameters:
+    clf:            LogisticRegression    - A trained logistic regression classifier
+    feature_names:  List[str]             - List of strings with the features name used in clf
+                                            dict of features and counts to a numpy array
+    encoder:        LabelEncoder          - Scikit-learn LabelEncoder used to encoding classes names  
+    n:              int                   - number of most relevant features used
+
+    Returns:
+    A dictionary that maps name of class to DataFrame of n most relevant features and
+    their weights.
+    """
+    most_important: defaultdict = defaultdict(DataFrame)
+    classes_names = encoder.classes_
+    # feature_names = v.get_feature_names()
+    columns = ["Feature", "Weight"]
+    if len(classes_names) == 2:
+
+        indices = clf.coef_[0].argsort()[-n:][::-1]
+        data = []
+        for index in indices:
+            data.append([feature_names[index], clf.coef_[0][index]])
+        class_name = encoder.inverse_transform([1])[0]
+        most_important[class_name] = DataFrame(
+            data, columns=columns, index=range(1, n + 1)
+        )
+
+        indices = (-clf.coef_[0]).argsort()[-n:][::-1]
+        data = []
+        for index in indices:
+            data.append([feature_names[index], (-clf.coef_[0])[index]])
+        class_name = encoder.inverse_transform([0])[0]
+        most_important[class_name] = DataFrame(
+            data, columns=columns, index=range(1, n + 1)
+        )
+
+    elif len(classes_names) > 2:
+
+        for i in range(len(classes_names)):
+            indices = clf.coef_[i].argsort()[-n:][::-1]  # n largest elements
+            data = []
+            for index in indices:
+                data.append([feature_names[index], clf.coef_[i][index]])
+            class_name = encoder.inverse_transform([i])[0]
+            most_important[class_name] = DataFrame(
+                data, columns=columns, index=range(1, n + 1)
+            )
+    return dict(most_important)
