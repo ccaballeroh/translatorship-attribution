@@ -74,7 +74,7 @@ def train_extract_most_relevant(
     scaler = StandardScaler(with_mean=False)
     X_, y_ = shuffle(X, y, random_state=24)
 
-    X = scaler.fit_transform(X)
+    X_ = scaler.fit_transform(X_)
     model = LogisticRegression()
 
     clf = model.fit(X_, y_)
