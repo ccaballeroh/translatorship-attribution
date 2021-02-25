@@ -1,0 +1,12 @@
+name: cohesive-markers
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.6.7
+  - spacy=2.2.2
+  - scikit-learn=0.21.3
+  - pandas=0.25.3
+  - seaborn=0.11.1
+  - ipykernel
+  - nb_conda_kernels
