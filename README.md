@@ -7,7 +7,7 @@ There are two ways to reproduce the results:
 
     1. Download or clone this repository locally
     1. Open a conda prompt inside the directory and type the following command:
-    >`conda env create -n translator-attribution -f environment.yml`
+        >`conda env create -n translator-attribution -f environment.yml`
     1. Open `jupyter lab` and you can start running the Notebooks in order.
 
 1. Remotely on Colab (prereqs having Google Drive)
