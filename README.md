@@ -14,6 +14,6 @@ There are two ways to reproduce the results:
 
 1. Remotely on Colab (you need a Google Drive account)
     
-    1. Download the contents of this repository in a folder named `translator-attribution`.
+    1. Download the contents of this repository in a folder named `translator-attribution` in your Google Drive root folder.
     1. You can start running the Notebooks in colab from this repository (allow Drive to synch between steps).
  
