@@ -25,6 +25,13 @@ For this other option, you need a Google Drive account.
 1. Download the contents of this repository in a folder named `translator-attribution` in your Google Drive root folder.
 1. You can start running the Notebooks in colab from this repository (allow Drive to synch between steps).
 
+    |  |              Notebook                  | Description |
+    |:--|:--------------------------------------|:------------|
+    |1| [Processing](./01Processing.ipynb) | Preprocessing and processing of text files |
+    |2| [Feature Extraction](./02Feature_Extraction.ipynb)| Extraction of features and saving to disk in JSON format |
+    |3| [Experiments](./03Experiments.ipynb) | All experiments and the results are saved to disk |
+    |4| [Most Relevant Features](./04Extraction_Most_Relevant_Features.ipynb) | Extraction and saving to disk of most relevant features ("translator fingerprints") for each translator and for each feature set |
+
 ## Results
 
-The results are saved as $\LaTeX$ tables and SVG images on the [results](./results) folder. They are under version control and can be browsed on this repository. 
+The results are saved as LaTeX tables and SVG images on the [results](./results) folder. They are under version control and can be browsed on this repository. 
