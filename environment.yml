@@ -1,4 +1,4 @@
-name: cohesive-markers
+name: translator-attribution
 channels:
   - defaults
   - conda-forge

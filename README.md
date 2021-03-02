@@ -1,5 +1,5 @@
-# Cohesive Markers
-Repository for holding code for paper submitted to journal
+# Discourse and Syntactic Markers as Features for Translatorship Attribution
+Repository for holding code for paper submitted to IEEE Access Journal
 
 There are two ways to reproduce the results:
 
