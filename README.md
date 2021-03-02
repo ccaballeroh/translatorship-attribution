@@ -23,7 +23,7 @@ For this, you must have Anaconda (or at least miniconda) installed.
 For this other option, you need a Google Drive account.
     
 1. Download the contents of this repository in a folder named `translator-attribution` in your Google Drive root folder.
-1. You can start running the Notebooks in Colab from this repository (allow Drive to synch between steps) by clicking in the badge on the top of each notebook.
+1. You can start running the Notebooks in Colab from this repository (allow Drive to synch between steps) by clicking on the Colab badge on the top of each notebook.
 
     |  |              Notebook                  | Description |
     |:--|:--------------------------------------|:------------|
