@@ -1,4 +1,4 @@
-# Causal Interpretation of Features for Translatorship Attribution
+# Causal Interpretation of the Translator's Style: Why Some Features Eliminate Confounding in Translatorship Attribution?
 ## Description
 Repository for holding code to reproduce results for paper submitted to IEEE Access Journal.
 
