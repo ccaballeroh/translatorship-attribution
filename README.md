@@ -1,6 +1,21 @@
 # On Explainable Features for Translatorship Attribution: Unveiling the Translator's Style with Causality
+
 ## Description
-Repository with code for reproducing results preented in [https://ieeexplore.ieee.org/document/9467290](https://ieeexplore.ieee.org/document/9467290) published in IEEE Access, an Open Access Journal, on June 29, 2021.
+Code for reproducing results presented in paper [https://ieeexplore.ieee.org/document/9467290](https://ieeexplore.ieee.org/document/9467290) published in IEEE Access, an Open Access Journal, on June 29, 2021.
+
+Cite as:
+
+```
+@ARTICLE{9467290,
+author={Caballero, Christian and Calvo, Hiram and Batyrshin, Ildar},
+journal={IEEE Access},
+title={On Explainable Features for Translatorship Attribution: Unveiling the Translator’s Style With Causality},
+year={2021},
+volume={9},
+number={},
+pages={93195-93208},
+doi={10.1109/ACCESS.2021.3093370}}
+```
 
 ## Instructions
 
