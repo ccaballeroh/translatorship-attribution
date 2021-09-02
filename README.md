@@ -1,6 +1,6 @@
 # On Explainable Features for Translatorship Attribution: Unveiling the Translator's Style with Causality
 ## Description
-Repository for holding code to reproduce results for paper submitted to IEEE Access Journal.
+Repository with code for reproducing results preented in [https://ieeexplore.ieee.org/document/9467290](https://ieeexplore.ieee.org/document/9467290) published in IEEE Access, an Open Access Journal, on June 29, 2021.
 
 ## Instructions
 
